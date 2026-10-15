@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mekanika Interaktif OSN IPA SD</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f2f4f8;--fg:#18233b;--card:#fff;--mut:#66718a;--g:#15803d;--r:#c62828;--b:#2457d6;--o:#d9680a;--ln:#d3d9e6;--grid:#e7ecf5;--ok:#e7f3ea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e131f;--fg:#e6eaf3;--card:#161e30;--mut:#8f9ab2;--g:#4ade80;--r:#f87171;--b:#6b9bff;--o:#fb923c;--ln:#2d3750;--grid:#1d2740;--ok:#15291e}}
+:root[data-theme="dark"]{--bg:#0e131f;--fg:#e6eaf3;--card:#161e30;--mut:#8f9ab2;--g:#4ade80;--r:#f87171;--b:#6b9bff;--o:#fb923c;--ln:#2d3750;--grid:#1d2740;--ok:#15291e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 Lexend,system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 14px 40px}
+header{margin-bottom:14px}
+h1{font-size:22px;line-height:1.25;font-weight:700;margin:0}
+header p{margin:2px 0 0;color:var(--mut);font-size:13.5px}
+#tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:thin}
+#tabs button{flex:none;min-width:44px;height:40px;border:1px solid var(--ln);background:var(--card);color:var(--fg);border-radius:10px;font:600 14px Lexend,system-ui,sans-serif;cursor:pointer}
+#tabs button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--b);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:18px;overflow:hidden}
+.head{padding:16px 18px 14px}
+#ti small{display:block;color:var(--mut);font-size:12.5px;font-weight:500;margin-bottom:2px}
+#ti{font-size:18px;font-weight:600;line-height:1.35}
+#q{color:var(--fg);opacity:.82;margin:6px 0 0;max-width:62ch}
+#svg{width:100%;height:auto;display:block;border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);background-color:var(--card);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:20px 20px}
+svg text{font-family:Lexend,system-ui,sans-serif}
+.ctl{display:flex;flex-direction:column;gap:14px;padding:16px 18px 4px}
+.ctl:empty{display:none}
+.ctl label{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 10px;font-size:14px;font-weight:500}
+.ctl label b{font-variant-numeric:tabular-nums;color:var(--b);font-weight:700}
+.ctl input[type=range]{flex-basis:100%;width:100%;height:28px;margin:0;accent-color:var(--b)}
+.ctl input[type=checkbox]{width:20px;height:20px;accent-color:var(--b);margin:0}
+.sel{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.sel button{border:1px solid var(--ln);background:transparent;color:var(--fg);border-radius:10px;padding:9px 10px;font:500 14px Lexend,system-ui,sans-serif;cursor:pointer}
+.sel button.on{background:var(--b);border-color:var(--b);color:#fff}
+.ctl>button{align-self:flex-start;padding:9px 14px!important;font-weight:600!important}
+#info{margin:14px 18px 0;padding:10px 14px;border-left:3px solid var(--b);background:var(--bg);border-radius:0 10px 10px 0;font-size:14.5px}
+.foot{padding:14px 18px 18px}
+#ab{border:1.5px solid var(--fg);background:transparent;color:var(--fg);border-radius:10px;padding:9px 16px;font:600 14px Lexend,system-ui,sans-serif;cursor:pointer}
+#ab:hover{background:var(--fg);color:var(--bg)}
+#ans{margin-top:12px;padding:10px 14px;border-left:3px solid var(--g);border-radius:0 10px 10px 0;background:var(--ok);font-weight:600}
+[hidden]{display:none!important}
+</style></head><body><main>
+<header><h1>Mekanika Interaktif</h1><p>Latihan gerak dan gaya untuk OSN IPA SD. Pilih nomor soal, lalu geser kontrolnya.</p></header>
+<div id="tabs" role="tablist" aria-label="Nomor soal"></div>
+<div class="card">
+<div class="head"><div id="ti"></div><div id="q"></div></div>
+<svg id="svg" viewBox="0 0 400 230" role="img" aria-label="Diagram soal"></svg>
+<div class="ctl" id="ctl"></div>
+<div id="info" aria-live="polite"></div>
+<div class="foot"><button id="ab">Lihat jawaban</button><div id="ans" hidden></div></div>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id),G='var(--g)',R='var(--r)',B='var(--b)',O='var(--o)',M='var(--mut)';
+const f=n=>String(+(+n).toFixed(2)).replace('.',',');
+const T=(x,y,t,c,a,z)=>`<text x="${x}" y="${y}" text-anchor="${a||'middle'}" font-size="${z||12}" font-weight="600" style="fill:${c||'var(--fg)'}">${t}</text>`;
+const L=(x1,y1,x2,y2,c,w,d)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${c||'var(--ln)'};stroke-width:${w||2}" ${d?'stroke-dasharray="5 4"':''} stroke-linecap="round"/>`;
+const C=(x,y,r,fl,st)=>`<circle cx="${x}" cy="${y}" r="${r}" style="fill:${fl};stroke:${st||'none'};stroke-width:2"/>`;
+const RC=(x,y,w,h,fl,op)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" style="fill:${fl};stroke:var(--fg);stroke-width:1.5;opacity:${op||1}"/>`;
+const E=(x1,y1,x2,y2,c,w)=>{const l=Math.hypot(x2-x1,y2-y1);if(l<4)return'';const a=Math.atan2(y2-y1,x2-x1),h=10,q=d=>`${x2-h*Math.cos(a+d)},${y2-h*Math.sin(a+d)}`;return L(x1,y1,x2-7*Math.cos(a),y2-7*Math.sin(a),c,w||4)+`<polygon points="${x2},${y2} ${q(.45)} ${q(-.45)}" style="fill:${c}"/>`};
+const P=[
+{n:3,pg:1,t:'Ember + katrol tetap',q:'Ember 5 kg ditarik ke atas lewat katrol tetap dengan gaya 60 N (g = 10). Apa yang terjadi? Geser gaya tarik T.',
+c:[{id:'T',l:'Gaya tarik T (N)',min:0,max:100,step:5,v:60}],
+d:s=>{const t=s.T,r=t-50,k=1.1;return[RC(180,110,40,30,'var(--card)')+T(200,130,'5 kg')+E(200,110,200,110-k*t,G)+E(200,140,200,140+k*50,R)+E(300,125,300,125-k*r,B,6)+T(228,110-k*t/2,'T = '+t+' N',G,'start')+T(228,140+k*25,'w = 50 N',R,'start')+T(290,215,'Resultan = '+r+' N',B,'end'),
+`ΣF = T − w = ${t} − 50 = <b>${r} N</b> → a = ${r}/5 = <b>${f(r/5)} m/s²</b> → ${r>0?'naik dipercepat':r<0?'turun dipercepat':'diam / kecepatan konstan'}`]},
+a:'A. Naik dipercepat (a = 2 m/s²)'},
+{n:6,pg:2,t:'Newton II + gaya gesek (troli)',q:'Troli 12 kg didorong 50 N, gesek 14 N, berat buku 120 N. Hitung percepatan. Coba ubah dorong & gesek.',
+c:[{id:'F',l:'Gaya dorong (N)',min:0,max:80,step:2,v:50},{id:'g',l:'Gaya gesek (N)',min:0,max:40,step:1,v:14}],
+d:s=>{const F=s.F,g=s.g,k=1.6,r=F-g;return[RC(170,100,60,50,'var(--card)')+T(200,130,'12 kg')+E(230,125,230+k*F,125,G)+E(170,125,170-k*g,125,R)+T(235+k*F/2,115,F+' N',G)+T(170-k*g/2,115,g+' N',R)+E(200,150,200,172,M,3)+T(210,185,'w = 120 N (pengecoh!)',M,'start',11)+E(170,210,170+k*r,210,B,6)+T(170+k*r/2,225,'Resultan = '+r+' N',B),
+`ΣF = ${F} − ${g} = <b>${r} N</b> → a = ${r}/12 = <b>${f(r/12)} m/s²</b>. Berat 120 N tidak dipakai (gesek sudah diberikan).`]},
+a:'B. 3 m/s²'},
+{n:11,pg:3,t:'GLBB: jarak = luas grafik v–t',q:'Mobil 10 → 20 m/s dalam 5 s. Berapa jarak tempuh? Geser waktu dan lihat luasnya bertambah.',
+c:[{id:'t',l:'Waktu t (s)',min:0,max:5,step:.5,v:5}],
+d:s=>{const t=s.t,x=a=>40+60*a,y=v=>190-8*v,sp=10*t+t*t;let ax='';for(let i=0;i<=5;i++)ax+=T(x(i),206,i);return[`<polygon points="${x(0)},190 ${x(0)},${y(10)} ${x(t)},${y(10+2*t)} ${x(t)},190" style="fill:var(--b);opacity:.3"/>`+L(40,190,350,190,M)+L(40,20,40,190,M)+L(x(0),y(10),x(5),y(20),B,3)+L(40,y(10),x(t),y(10),M,1.5,1)+ax+T(32,y(10)+4,'10',M,'end')+T(32,y(20)+4,'20',M,'end')+T(360,206,'t (s)',M,'start')+T(46,14,'v (m/s)',M,'start'),
+`Persegi panjang: 10×${f(t)} = ${f(10*t)} m · Segitiga: ½×${f(t)}×${f(2*t)} = ${f(t*t)} m<br>Jarak = <b>${f(sp)} m</b> ${t==5?'(= v rata-rata 15 × 5 = 75 ✔)':''}`]},
+a:'C. 75 m'},
+{n:14,pg:3,t:'Jatuh bebas: vakum vs udara',q:'Bola logam 200 g dan plastik 100 g dijatuhkan dari 2 m. Geser waktu, lalu nyalakan "ada udara" sebagai pembanding.',
+c:[{id:'t',l:'Waktu (s)',min:0,max:.63,step:.01,v:.4},{id:'air',k:'chk',l:'Ada udara (ilustrasi pembanding)',v:false}],
+d:s=>{const t=s.t,gh=s.air?9.5:10,gl=s.air?5:10,dh=Math.min(2,.5*gh*t*t),dl=Math.min(2,.5*gl*t*t);return[L(60,205,340,205,M,3)+L(130,20,130,205,'var(--ln)',1,1)+L(270,20,270,205,'var(--ln)',1,1)+C(130,20+85*dh,14,M)+C(270,20+85*dl,14,'var(--card)','var(--fg)')+T(130,225,'Logam 200 g')+T(270,225,'Plastik 100 g')+E(130,20+85*dh+16,130,20+85*dh+40,R,3)+E(270,20+85*dl+16,270,20+85*dl+34,R,2)+T(200,100,s.air?'UDARA':'VAKUM',s.air?O:G,'middle',16),
+s.air?`Ilustrasi: udara menghambat plastik lebih besar → tertinggal. Turun: logam ${f(dh)} m, plastik ${f(dl)} m.`:`t = ${f(t)} s → keduanya turun <b>${f(dh)} m</b> (sejajar). Berat beda, tapi inersia juga beda → a = g = 10 m/s² untuk keduanya.`]},
+a:'C. Kedua bola jatuh bersamaan, percepatan sama'},
+{n:16,pg:3,t:'Perosotan licin: energi kekal',q:'Dua perosotan sama tinggi (2 m), panjang jalur beda. Geser penurunan bola dan bandingkan kecepatannya.',
+c:[{id:'d',l:'Turun sejauh (m)',min:0,max:2,step:.05,v:1}],
+d:s=>{const d=s.d,fr=d/2,v=Math.sqrt(20*d),bx=(a,b)=>a+(b-a)*fr,ep=340*(2-d)/2;return[L(50,30,170,200,'var(--fg)',4)+L(220,30,380,200,'var(--fg)',4)+T(110,20,'A (5 m)')+T(300,20,'B (6 m)')+C(bx(50,170),bx(30,200)-9,9,O)+C(bx(220,380),bx(30,200)-9,9,B)+`<rect x="30" y="212" width="${ep}" height="12" style="fill:var(--b)"/><rect x="${30+ep}" y="212" width="${340-ep}" height="12" style="fill:var(--o)"/>`+T(34,208,'EP',B,'start',10)+T(370,208,'EK',O,'end',10),
+`Turun ${f(d)} m → v = √(2·10·${f(d)}) = <b>${f(v)} m/s</b> di kedua perosotan. ${d==2?'Waktu A &lt; B, tapi kecepatan di dasar <b>sama</b>.':''}`]},
+a:'C. Kecepatan sama (≈ 6,3 m/s)'},
+{n:35,pg:6,t:'Jarak vs perpindahan',q:'Posisi: t=2 → 8 cm, t=3 → 12, t=4 → 10, t=5 → 14. Geser waktu akhir dari detik 2.',
+c:[{id:'t',l:'Sampai detik ke-',min:2,max:5,step:1,v:5}],
+d:s=>{const p=[8,12,10,14],i=s.t-2,X=a=>30+a*20;let o=L(30,130,350,130,M);for(let a=0;a<=16;a+=2)o+=T(X(a),148,a,M,'middle',10);let j=0;for(let k=0;k<i;k++){const fw=p[k+1]>p[k],yy=100-k*24;j+=Math.abs(p[k+1]-p[k]);o+=E(X(p[k]),yy,X(p[k+1]),yy,fw?G:R)+T((X(p[k])+X(p[k+1]))/2,yy-8,Math.abs(p[k+1]-p[k])+' cm'+(fw?'':' (mundur)'),fw?G:R,'middle',11)}for(let k=0;k<=i;k++)o+=C(X(p[k]),130,5,'var(--fg)');o+=E(X(8),175,X(p[i]),175,B,5)+T(X(8),200,'start (8 cm)',M,'start',11);return[o,`Perpindahan = ${p[i]} − 8 = <b>${p[i]-8} cm</b> · Jarak = <b>${j} cm</b> ${i==3?'(A: 6 cm dan 10 cm ✔)':''}`]},
+a:'A. Perpindahan 6 cm, jarak 10 cm'},
+{n:41,pg:7,t:'Kelajuan rata-rata: terjepit A–B',q:'A 30 km/jam (tiba 17.00), B 40 km/jam (tiba 16.00). C di antara keduanya. Geser kelajuan C.',
+c:[{id:'v',l:'Kelajuan C (km/jam)',min:28,max:42,step:.5,v:35}],
+d:s=>{const v=s.v,a=13+120/v,X=h=>30+(h-15)*85,h=Math.floor(a),m=Math.round((a-h)*60),ok=v>30&&v<40;let o=`<rect x="${X(16)}" y="90" width="85" height="60" style="fill:var(--b);opacity:.25"/>`+L(30,120,370,120,M,3)+E(X(a),70,X(a),112,ok?G:R,4)+T(X(a),62,'C '+h+'.'+String(m).padStart(2,'0'),ok?G:R);[[16,'B 16.00'],[17,'A 17.00']].forEach(q=>o+=C(X(q[0]),120,6,'var(--fg)')+T(X(q[0]),140,q[1],'var(--fg)','middle',11));[15.5,16.5,17.5,18.5].forEach(q=>{const w=q>16&&q<17;o+=T(X(q),185,'⬤ '+f(q).replace(',','.').replace('.5','.30'),w?G:R,'middle',11)});return[o+T(X(16.5),105,'zona C',B,'middle',11),`t = 120/${f(v)} = ${f(120/v)} jam → tiba <b>${h}.${String(m).padStart(2,'0')}</b>. ${ok?'✔ Di zona (lebih cepat dari A, lebih lambat dari B)':'✖ Di luar zona — C harus lebih cepat dari A & lebih lambat dari B'}`]},
+a:'B. 16.30 (satu-satunya opsi di antara 16.00 dan 17.00)'},
+{n:42,pg:7,t:'Bidang miring: KM = s/h',q:'Pilih bidang A–D. Keuntungan mekanik terbesar = paling landai.',
+c:[{id:'k',k:'sel',o:['A: 200/50','B: 180/60','C: 150/50','D: 120/60'],v:0}],
+d:s=>{const D=[[200,50],[180,60],[150,50],[120,60]],[S,H]=D[s.k],sc=1.5,b=Math.sqrt(S*S-H*H)*sc,hh=H*sc;let o=`<polygon points="30,150 ${30+b},150 ${30+b},${150-hh}" style="fill:var(--b);opacity:.3;stroke:var(--b);stroke-width:2"/>`+T(30+b/2-8,150-hh/2-6,'s = '+S+' cm',B)+T(40+b,150-hh/2,'h = '+H,R,'start')+RC(40+b*.25,150-hh*.25-14,16,14,O);D.forEach((q,i)=>{const km=q[0]/q[1];o+=`<rect x="${70+i*80}" y="${215-km*10}" width="40" height="${km*10}" style="fill:${i==s.k?'var(--b)':'var(--mut)'}"/>`+T(90+i*80,226,'ABCD'[i]+' = '+f(km),'var(--fg)','middle',11)});return[o,`KM = s/h = ${S}/${H} = <b>${f(S/H)}</b>. Makin landai → gaya makin kecil, tapi jalur makin panjang (usaha tetap).`]},
+a:'A (KM = 4)'},
+{n:45,pg:8,t:'Perahu & arus (Set 2)',q:'Searah arus 100 m = 10 s; melawan arus 100 m = 50 s. Berapa lama jika hanya terbawa arus? Ubah v dan u.',
+c:[{id:'v',l:'Kecepatan perahu v (m/s)',min:1,max:10,step:.5,v:6},{id:'u',l:'Kecepatan arus u (m/s)',min:.5,max:9.5,step:.5,v:4}],
+d:s=>{const v=s.v,u=s.u,k=18,x=40,w=v-u;let o=T(x,22,'Searah: v + u',G,'start')+E(x,35,x+k*v,35,G)+E(x+k*v,35,x+k*(v+u),35,O)+E(x,50,x+k*(v+u),50,B,6)+T(x,92,'Melawan: v − u',R,'start')+E(x,105,x+k*v,105,G)+E(x+k*v,117,x+k*v-k*u,117,R)+(w>0?E(x,130,x+k*w,130,B,6):T(x,134,'tidak bisa maju (u ≥ v)',R,'start'))+T(x,172,'Terbawa arus: u',O,'start')+E(x,190,x+k*u,190,O,6);return[o,`Searah ${f(v+u)} m/s → ${f(100/(v+u))} s · Melawan ${w>0?f(w)+' m/s → '+f(100/w)+' s':'—'} · Terbawa arus ${f(u)} m/s → <b>${f(100/u)} s</b>`]},
+a:'B. 25 detik (u = 4 m/s, v = 6 m/s)'},
+{n:48,pg:8,t:'Gerak melingkar (Isian)',q:'Laju tetap tapi arah berubah → ada percepatan. Geser posisi bola, lalu putuskan talinya.',
+c:[{id:'th',l:'Posisi bola (°)',min:0,max:360,step:5,v:45},{id:'cut',k:'btn',l:'✂ Putus tali'}],
+d:s=>{const a=s.th*Math.PI/180,cx=200,cy=115,r=70,bx=cx+r*Math.cos(a),by=cy-r*Math.sin(a),tx=-Math.sin(a),ty=-Math.cos(a);let o=`<circle cx="${cx}" cy="${cy}" r="${r}" style="fill:none;stroke:var(--ln);stroke-width:2;stroke-dasharray:5 4"/>`+C(cx,cy,5,'var(--fg)');if(!s.cut)return[o+L(cx,cy,bx,by,'var(--fg)',2)+C(bx,by,10,O)+E(bx,by,bx+48*tx,by+48*ty,G)+E(bx,by,bx+(cx-bx)*.55,by+(cy-by)*.55,B)+T(bx+55*tx,by+55*ty,'v',G)+T(cx,215,'hijau = kecepatan (singgung) · biru = percepatan sentripetal (ke pusat)','var(--fg)','middle',11),`Arah v terus berubah → ada percepatan a = v²/r <b>menuju pusat</b>.`];const px=bx+tx*s.ft*100,py=by+ty*s.ft*100;return[o+L(bx,by,px,py,G,2,1)+C(bx,by,4,M)+C(px,py,10,O)+T(cx,215,'Tali putus → gaya ke pusat hilang → bola lurus menyinggung lingkaran','var(--fg)','middle',11),`Tanpa gaya (Newton I), bola bergerak <b>lurus</b> searah kecepatan terakhir.`]},
+a:'(a) percepatan sentripetal (≠ 0, ke pusat); (b) lingkaran'}
+];
+let cur=0,s={};
+function upd(){const r=P[cur].d(s);$('svg').innerHTML=r[0];$('info').innerHTML=r[1]}
+function load(i){cur=i;const p=P[i];s={};[...$('tabs').children].forEach((b,j)=>b.className=j==i?'on':'');$('ti').innerHTML=`<small>Soal no. ${p.n}, halaman ${p.pg}</small>${p.t}`;$('q').textContent=p.q;const cl=$('ctl');cl.innerHTML='';$('ans').hidden=true;$('ab').textContent='Lihat jawaban';
+p.c.forEach(c=>{s[c.id]=c.v;const w=document.createElement('div');
+if(c.k=='sel'){w.className='sel';c.o.forEach((t,j)=>{const b=document.createElement('button');b.textContent=t;b.className=j==c.v?'on':'';b.onclick=()=>{s[c.id]=j;[...w.children].forEach((x,y)=>x.className=y==j?'on':'');upd()};w.appendChild(b)})}
+else if(c.k=='chk'){w.innerHTML=`<label style="flex-direction:row;gap:6px"><input type="checkbox"> ${c.l}</label>`;w.firstChild.firstChild.onchange=e=>{s[c.id]=e.target.checked;upd()}}
+else if(c.k=='btn'){const b=document.createElement('button');b.textContent=c.l;b.className='on';b.style.cssText='border-radius:10px;border:0;background:var(--r);color:#fff;font:inherit;cursor:pointer';b.onclick=()=>{s.cut=1;s.ft=0;(function lp(){if(!s.cut)return;s.ft+=.03;upd();if(s.ft<2)requestAnimationFrame(lp)})()};w.appendChild(b)}
+else{w.innerHTML=`<label><span>${c.l}</span><b>${c.v}</b><input type="range" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.v}"></label>`;const inp=w.querySelector('input'),o=w.querySelector('b');inp.oninput=()=>{s[c.id]=+inp.value;s.cut=0;o.textContent=inp.value;upd()}}
+cl.appendChild(w)});$('ans').textContent=p.a;upd()}
+P.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.n;b.title='Soal no. '+p.n;b.onclick=()=>load(i);$('tabs').appendChild(b)});
+$('ab').onclick=()=>{const h=!$('ans').hidden;$('ans').hidden=h;$('ab').textContent=h?'Lihat jawaban':'Sembunyikan jawaban'};
+load(0);
+</script></body></html>
